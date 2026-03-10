@@ -1,7 +1,5 @@
 public class ServicePerson {
-    public void savePerson(Person person) {
-        MySql mysql = new MySql();
-        mysql.savePerson(person);
+    public void savePerson(PersonDataControl PersonDataControl, Person person) {
+        PersonDataControl.savePerson(person);
     }
-
 }
