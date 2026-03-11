@@ -1,128 +1,104 @@
-# 🚪 O - Principi Obert/Tancat (OCP)
+#  O - Open/Closed Principle (OCP)
 
-## 🧠 Què és?
+##  What is it?
 
-El **Principi Obert/Tancat** estableix que:
+The **Open/Closed Principle** states that:
 
-> **El codi ha d’estar obert a l’extensió, però tancat a la modificació**
+> **Code should be open for extension, but closed for modification**
 
-Això vol dir que hauríem de poder **afegir noves funcionalitats** al nostre sistema **sense haver de modificar el codi existent**.
+This means we should be able to **add new functionalities** to our system **without having to modify existing code**.
 
+###  **Example:**
 
-### 👩‍🏫 **Exemple:**
-
-Suposa que tens una classe `CalculadoraDescomptes` amb aquest mètode:
-
-```java
-public double calculaDescompte(Producte producte) {
-    if (producte.getTipus().equals("Nadal")) {
-        return producte.getPreu() * 0.2;
-    } else if (producte.getTipus().equals("BlackFriday")) {
-        return producte.getPreu() * 0.3;
-    }
-    return 0;
+Suppose you have a class `DiscountCalculator` with this method:
+```
+java
+public double calculateDiscount(Product product) {
+if (product.getType().equals("Christmas")) {
+return product.getPrice() * 0.2;
+} else if (product.getType().equals("BlackFriday")) {
+return product.getPrice() * 0.3;
+}
+return 0;
 }
 ```
-🔴 Problema: Cada vegada que vols afegir un nou tipus de descompte, **has de modificar aquesta classe**.
-⚠️ Això **viola el principi OCP**, perquè el codi no està tancat a la modificació.
-
-
-✅ La solució és usar **polimorfisme** o **patrons de disseny** (com a **Estratègia** o **Fàbrica**), que permetin afegir nous comportaments sense tocar el codi existent:
-
-- **1️⃣ Definim una interfície comuna:**
-
+ **Problem:** Every time you want to add a new discount type, **you have to modify this class**.
+ This **violates the OCP**, because the code is closed to modification.
+ **The solution is to use polymorphism or design patterns (such as Strategy or Factory), which allow you to add new behaviors without touching existing code:**
+- **1 Define a common interface:**
 ```java
-public interface EstrategiaDescompte {
-    double aplicaDescompte(Producte producte);
+public interface DiscountStrategy {
+    double applyDiscount(Product product);
 }
 ```
-- **2️⃣ Implementem estratègies concretes:**
-
+- **2 Implement concrete strategies:**
 ```java
-public class DescompteNadal implements EstrategiaDescompte {
-    public double aplicaDescompte(Producte producte) {
-        return producte.getPreu() * 0.2;
+public class ChristmasDiscount implements DiscountStrategy {
+    public double applyDiscount(Product product) {
+        return product.getPrice() * 0.2;
     }
 }
 
-public class DescompteBlackFriday implements EstrategiaDescompte {
-    public double aplicaDescompte(Producte producte) {
-        return producte.getPreu() * 0.3;
+public class BlackFridayDiscount implements DiscountStrategy {
+    public double applyDiscount(Product product) {
+        return product.getPrice() * 0.3;
     }
 }
 
-public class DescompteAniversari implements EstrategiaDescompte {
-    public double aplicaDescompte(Producte producte) {
-        return producte.getPreu() * 0.1;
+public class BirthdayDiscount implements DiscountStrategy {
+    public double applyDiscount(Product product) {
+        return product.getPrice() * 0.1;
     }
 }
-
 ```
-- **3️⃣ Classe CalculadoraDescomptes flexible i oberta a l’extensió:**
-
+- **3 Flexible and open for extension DiscountCalculator class:**
 ```java
+public class DiscountCalculator {
 
-public class CalculadoraDescomptes {
-
-    public double calculaDescompte(Producte producte, EstrategiaDescompte estrategia) {
-        return estrategia.aplicaDescompte(producte);
+    public double calculateDiscount(Product product, DiscountStrategy strategy) {
+        return strategy.applyDiscount(product);
     }
 }
-````
-- **4️⃣ Exemple d'ús:**
-
+```
+- **4 Example of Usage:**
 ```java
 public class Main {
     public static void main(String[] args) {
-        Producte producte = new Producte("Portàtil", 1000);
+        Product product = new Product("Laptop", 1000);
 
-        CalculadoraDescomptes calculadora = new CalculadoraDescomptes();
- 
-        double descompte = calculadora.calculaDescompte(producte, new DescompteNadal());
-        System.out.println("Descompte aplicat: " + descompte);
+        DiscountCalculator calculator = new DiscountCalculator();
+
+        double discount = calculator.calculateDiscount(product, new ChristmasDiscount());
+        System.out.println("Discount applied: " + discount);
     }
 }
 ```
----
-
-## 🎯 Objectiu de l’exercici
-
-En l’arxiu Java adjunt trobaràs una classe que **no respecta el principi OCP**: necessita ser modificada cada cop que hi ha un canvi o extensió de funcionalitat.
-
-🔧 El teu repte és:
-
-1. Identificar quina part del codi està **massa exposada a modificacions**.
-2. Refactoritzar-lo perquè sigui **fàcilment extensible** sense alterar el comportament existent.
-3. Aplicar **abstraccions i polimorfisme** per fer el codi més flexible i robust.
 
 ---
-
-## 📌 Consells per aplicar OCP
-
-✅ **Evita instruccions condicionals (if/else, switch)** per decidir comportaments que poden variar amb el temps.
-
-✅ **Defineix interfícies o classes abstractes** que permetin afegir noves funcionalitats sense tocar el codi existent.
-
-✅ **Fes servir patrons com a Estratègia, Fàbrica o Cadena de Responsabilitat** segons el context.
-
+##  Exercise Objective
+In the attached Java file, you will find a class that **does not respect the OCP**: it needs to be modified every time there is a change or extension of functionality.
+ Your challenge is:
+1. Identify which part of the code is **too exposed to modifications**.
+2. Refactor it to make it **easily extensible** without altering existing behavior.
+3. Apply **abstractions and polymorphism** to make the code more flexible and robust.
 ---
-
-
-## 💬 Reflexió
-
-Quan un sistema està ben dissenyat segons **OCP**:
-- Pots afegir **noves funcionalitats** amb facilitat.
-- El teu codi és **més estable** i menys vulnerable a regressions`*`.
-- Millores la **reutilització** i **mantenibilitat**.
-
-🔁 **Extensible**, però **segur**. Aquest és el poder de l’OCP. 
-
-`*` **Regressió** significa que una funcionalitat que **abans funcionava correctament, ara ha deixat de funcionar** després d’haver fet canvis al codi.
-
+##  Tips for Applying OCP
+ **Avoid conditional statements (if/else, switch) to determine behaviors that may vary over time.**
+ **Define interfaces or abstract classes** that allow you to add new functionalities without touching existing code.
+ **Use patterns such as Strategy, Factory, or Chain of Responsibility** depending on the context.
 ---
+##  Reflection
 
-🚀 Endavant! Revisa el codi, detecta com es pot millorar i aplica el principi OCP per fer-lo més modular i preparat pel futur.
-
-❓ **Ets capaç d’afegir un nou producte sense canviar el codi?** 
-
-
+When a
+system is well-designed according to **OCP**:
+- You can
+  **add new functionalities** with ease.
+- Your code is **more stable** and less vulnerable to regressions.
+- You improve
+  **reusability and maintainability**.
+   **Extensible, but secure**. This is the power of OCP.
+  `*` **Regression** means that a functionality that **previously worked correctly, now no longer works** after making changes to the code.
+---
+ Let's go! Review the code, identify how it can be improved, and apply the OCP principle to make it more modular and ready for the future.
+ **Are you able to add a new product without changing the code?**
+```
