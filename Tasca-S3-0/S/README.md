@@ -1,147 +1,125 @@
-# 🧱 S - Principi de Responsabilitat Única (SRP)
+#  S - Single Responsibility Principle (SRP)
 
-## 🧠 Què és?
+##  What is it?
 
-El **Principi de Responsabilitat Única** estableix que:
+The **Single Responsibility Principle** states that:
 
-> **Una classe ha de tenir una única raó per canviar.**
+> **A class should have one reason to change.**
 
-Dit d’una altra manera, una classe hauria de tenir **una sola responsabilitat**, o **un sol motiu per ser modificada**.
+In other words, a class should have **one sole responsibility**, or **one single motive for being modified**.
 
-👩‍🏫 **Exemple:**
-Si tens una classe `Informe` que:
-- genera contingut,
-- imprimeix l’informe,
-- i el desa l'informe.
+ **Example:**
+If you have a `Report` class that:
+- generates content,
+- prints the report,
+- and saves the report.
+```
+java
+public class Report {
+    private String content;
 
-```java
-public class Informe {
-    private String contingut;
-
-    public Informe(String contingut) {
-        this.contingut = contingut;
+    public Report(String content) {
+        this.content = content;
     }
     
-    public String obtenirContingut() {
-        return contingut;
+    public String getContent() {
+        return content;
     }
 
-    public void imprimir() {
-        System.out.println("Imprimint informe:");
-        System.out.println(contingut);
+    public void print() {
+        System.out.println("Printing report:");
+        System.out.println(content);
     }
 
-    public void desar(String nomFitxer) {
-        try (FileWriter writer = new FileWriter(nomFitxer)) {
-            writer.write(contingut);
-            System.out.println("Informe desat a " + nomFitxer);
+    public void save(String fileName) {
+        try {
+            FileWriter writer = new FileWriter(fileName);
+            writer.write(content);
+            System.out.println("Report saved to " + fileName);
         } catch (IOException e) {
-            System.err.println("Error en desar l'informe: " + e.getMessage());
+            System.err.println("Error saving report: " + e.getMessage());
         }
     }
 }
 ```
-🔴 Problema: Cada una d’aquestes funcions **pertany a responsabilitats diferents**, i haurien d’estar separades en diferents classes.
-
-⚠️ Estàs violant el principi! 
-
-✅ Versió refactoritzada amb SRP aplicat: separem les responsabilitats en classes diferents:
-
-- **1️⃣ Informe: només conté el contingut.**
-
+ **Problem:** Each of these functions **has a different responsibility**, and they should be separated into different classes.
+ **You are violating this principle!**
+ **Refactored version applying SRP:** We separate the responsibilities into different classes:
+- ** Report: Only contains the content.**
+- 
 ```java
-// Classe amb una única responsabilitat: mantenir el contingut
-public class Informe {
-    private String contingut;
+// Class with a single responsibility: maintain the content
+public class Report {
+    private String content;
 
-    public Informe(String contingut) {
-        this.contingut = contingut;
+    public Report(String content) {
+        this.content = content;
     }
 
-    public String obtenirContingut() {
-        return contingut;
+    public String getContent() {
+        return content;
     }
 }
 ```
-
-- **2️⃣ Impressora: s'encarrega d'imprimir.**
-
+- ** Printer: Responsible for printing reports.**
 ```java
-// Classe amb una única responsabilitat: imprimir informes
-public class Impressora {
-    public void imprimirInforme(Informe informe) {
-        System.out.println("Imprimint informe:");
-        System.out.println(informe.obtenirContingut());
+// Class with a single responsibility: print reports
+public class Printer {
+    public void printReport(Report report) {
+        System.out.println("Printing report:");
+        System.out.println(report.getContent());
     }
 }
 ```
-- **3️⃣ Desament: s'encarrega de desar l'informe.**
-
+- ** Saver: Responsible for saving the report.**
 ```java
-// Classe amb una única responsabilitat: desar informes
-public class Desament {
-    public void desarInforme(Informe informe, String nomFitxer) {
-        try (FileWriter writer = new FileWriter(nomFitxer)) {
-            writer.write(informe.obtenirContingut());
-            System.out.println("Informe desat a " + nomFitxer);
+// Class with a single responsibility: save reports
+public class Saver {
+    public void saveReport(Report report, String fileName) {
+        try {
+            FileWriter writer = new FileWriter(fileName);
+            writer.write(report.getContent());
+            System.out.println("Report saved to " + fileName);
         } catch (IOException e) {
-            System.err.println("Error en desar l'informe: " + e.getMessage());
+            System.err.println("Error saving report: " + e.getMessage());
         }
     }
 }
 ```
-- **4️⃣ Exemple d'ús:**
-
+- ** Example Usage:**
 ```java
 public class Main {
     public static void main(String[] args) {
-        Informe informe = new Informe("Aquest és el contingut de l'informe.");
+        Report report = new Report("This is the report content.");
 
-        ImpressoraInforme impressora = new ImpressoraInforme();
-        impressora.imprimirInforme(informe);
+        Printer printer = new Printer();
+        printer.printReport(report);
 
-        Desament desament = new Desament();
-        desament.desarInforme(informe, "informe.txt");
+        Saver saver = new Saver();
+        saver.saveReport(report, "report.txt");
     }
 }
 ```
----
-
-## 🎯 Objectiu de l’exercici
-
-A l’arxiu Java adjunt trobaràs una classe que **no respecta aquest principi**: fa massa coses alhora.
-
-🔧 El teu repte és:
-
-1. Analitzar les responsabilitats múltiples que té la classe.
-2. Separar-les en **classes diferents**, cadascuna amb una sola responsabilitat clara.
-3. Mantenir el codi llegible, modular i fàcil de mantenir.
 
 ---
-
-## 📌 Consells per aplicar SRP
-
-✅ Pregunta’t: *"Quines raons tindria aquesta classe per canviar?" i "Quines són les responsabilitats d’aquesta classe?"*
-
-✅ Si n’hi ha més d’una... és hora de separar responsabilitats!
-
-✅ No tinguis por de crear **més classes petites i enfocades**.
-
+##  Exercise Objective
+In the attached Java file, you will find a class that **does not respect this principle**: it does too many things at once.
+ **Your challenge is:**
+1.  Analyze the multiple responsibilities that the class has.
+2.  Separate them into **different classes**, each with a clear single responsibility.
+3.  Maintain the code readable, modular, and easy to maintain.
 ---
-
-
-## 💬 Reflexió
-
-Quan una classe té només una responsabilitat:
-- És més fàcil de llegir.
-- És més fàcil de provar.
-- És menys probable que generi errors quan canvies una funcionalitat.
-
-🔁 **Menys acoblament, més cohesió.**
-
+##  Tips for Applying SRP
+ Ask yourself: *"What reasons would this class have to change?" and "What are the responsibilities of this class?"*
+ If there are more than one... it’s time to separate responsibilities!
+ Don’t be afraid to create **smaller, more focused classes**.
 ---
-
-🚀 Endavant! Revisa el codi, aplica el principi SRP i gaudeix del procés de refactorització.
-
-❓ **Quantes responsabilitats té la classe?**
-
+##  Reflection
+When a class has only one responsibility:
+- It's easier to read.
+- It's easier to test.
+- It's less likely to generate errors when you change a functionality.
+   **Less coupling, more cohesion.**
+---
+ Let's go! Review the code, apply the SRP principle, and enjoy the refactoring process.
+ **How many responsibilities does the class have?**
