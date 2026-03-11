@@ -1,4 +1,4 @@
-public class AirConditioner implements MachineActions {
+public class AirConditioner implements ACMachineActions {
 
     @Override
     public void turnOn() {
@@ -18,11 +18,6 @@ public class AirConditioner implements MachineActions {
     @Override
     public void cool() {
         System.out.println("AirConditioner is cooling.");
-    }
-
-    @Override
-    public void wash() {
-        System.out.println("Wash operation not supported by AirConditioner.");
     }
 }
 

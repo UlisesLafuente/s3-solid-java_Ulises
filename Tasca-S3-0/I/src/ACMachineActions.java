@@ -1,7 +1,6 @@
-public interface MachineActions {
+public interface ACMachineActions {
     void turnOn();
     void turnOff();
     void heat();
     void cool();
-    void wash();
 }
