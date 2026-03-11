@@ -1,49 +1,48 @@
-# 🧬 L - Principi de Substitució de Liskov (LSP)
+# L - Liskov Substitution Principle (LSP)
 
-## 🧠 Què és?
+## What is it?
 
-El **Principi de Substitució de Liskov (LSP)** diu que:
+The **Liskov Substitution Principle (LSP)** states that:
 
-> **Les subclasses han de poder substituir les seves superclasses sense alterar el comportament del programa.**
+> **Subclasses must be able to substitute for their superclasses without altering the program's behavior.**
 
-Això significa que qualsevol classe filla hauria de **comportar-se com la seva classe pare**. Si una subclasse **trenca contractes o comportaments** definits a la classe base, llavors viola aquest principi.
+This means that any derived class should **behave like its parent class**. If a subclass **breaks contracts or behaviors** defined in the base class, then it violates this principle.
 
-En altres paraules, si un programa està dissenyat per treballar amb un objecte d’una classe base, hauria de funcionar correctament si aquest objecte se substitueix per qualsevol objecte d’una classe derivada.
+In other words, if a program is designed to work with an object of a base class, it should work correctly if that object is substituted with any object of a derived class.
 
-## 🚨 Per què és important?
-Quan fem servir **herència**, esperem que una subclasse **ampliï el comportament de la superclasse, no que el trenqui**. Si no es respecta LSP, podem tenir errors difícils de detectar i sistemes difícils de mantenir o estendre.
+## Why is it important?
 
-### 👩‍🏫 **Exemple:**
+When we use **inheritance**, we expect a subclass to **extend the behavior of the superclass, not break it**. If LSP is not respected, we can have difficult-to-detect errors and systems that are difficult to maintain or extend.
 
-Suposem que estàs dissenyant una aplicació que treballa amb diverses **criptomonedes** i ofereixes una **API** com aquesta:
+### **Example:**
 
-```java
+Suppose you are designing an application that works with various **cryptocurrencies** and offers an API like this:
+```
+java
 public class Wallet {
-    private String nomCripto;
-    private String codiCancelacio;
+    private String nameCrypto;
+    private String cancelCode;
 
-    public Wallet(String nomCripto, String codiCancelacio) {
-        this.nomCripto = nomCripto;
-        this.codiCancelacio = codiCancelacio;
+    public Wallet(String nameCrypto, String cancelCode) {
+        this.nameCrypto = nameCrypto;
+        this.cancelCode = cancelCode;
     }
 
-    public void enviarDiner(String desti, double quantitat) {
-        System.out.println("S’està enviant diners per la blockchain de " + nomCripto);
+    public void sendMoney(String destination, double amount) {
+        System.out.println("Money is being sent via the blockchain of " + nameCrypto);
     }
 
-    public void cancelarTransaccio(String idTransaccio) {
-        if (AuthorizationCancel.cancel(codiCancelacio, idTransaccio))
-            System.out.println("S’anul·la la transacció" + id + "amb el codi" + codiCancelacio);
-        else throw new TransactionCancelException("No s’ha pogut cancel·lar la transacció");
+    public void cancelTransaction(String transactionId) {
+        if (AuthorizationCancel.cancel(cancelCode, transactionId))
+            System.out.println("Transaction " + transactionId + " is being cancelled with the code" + cancelCode);
+        else throw new TransactionCancelException("Transaction could not be cancelled");
     }
 }
 ```
-**La teva API treballa amb:**
-
+**Your API works with:**
 - `Tezos`
 - `Ethereum`
 - `Monero`
-
 ```java
 public class TezosWallet extends Wallet{
     public TezosWallet(){
@@ -59,134 +58,101 @@ public class EthereumWallet extends Wallet{
 
 public class MoneroWallet extends Wallet{
     public MoneroWallet(){
-        super("Monero", null); //Monero no permet la cancel·lació de transaccions
+        super("Monero", null); //Monero does not allow cancelling transactions
     }
 }
-
 ```
-🔴 Problema: MoneroWallet hereta de Wallet, però quan algú crida `cancelarTransaccio()` amb una instància de `MoneroWallet`, el **programa va a trencar sempre** perquè Monero no permet cancel·lacions.
-
-⚠️ Per tant, no es pot utilitzar `MoneroWallet` en contextos que esperen que `Wallet.cancelarTransaccio()` funcioni correctament → això **trenca LSP.**
-
-✅ Solució: aplicar LSP amb una **jerarquia clara**: 
-> La clau és **separar les responsabilitats**: no totes les criptomonedes permeten cancel·lacions, així que no totes les wallets haurien de tenir aquest mètode.
-
-- **1️⃣ Crear la interfície per a la cancel·lació:**
-
+Problem: `MoneroWallet` inherits from `Wallet`, but whenever someone calls `cancelTransaction()` with a `MoneroWallet` instance, the **program will always break** because Monero does not allow cancellations.
+Therefore, a `MoneroWallet` cannot be used in contexts that expect `Wallet.cancelTransaction()` to work correctly – this **violates LSP**.
+Solution: Apply LSP with a **clear hierarchy**:
+> The key is **separating responsibilities**: not all cryptocurrencies allow cancellations, so not all wallets should have this method.
+- **1 Create an interface for cancellation:**
 ```java
-public interface EstrategiaCancelacio {
-    void cancellar(String id);
+public interface CancellationStrategy {
+    void cancel(String id);
 }
 ```
-- **2️⃣ Implementar l’estratègia real i la null:**
-
+- **2 Implement the real and null strategy:**
 ```java
-public class EstrategiaCancelacioPermitida implements EstrategiaCancelacio {
-    private String codiCancelacio;
+public class AllowedCancellationStrategy implements CancellationStrategy {
+    private String cancelCode;
 
-    public EstrategiaCancelacioPermitida(String codiCancelacio) {
-        this.codiCancelacio = codiCancelacio;
+    public AllowedCancellationStrategy(String cancelCode) {
+        this.cancelCode = cancelCode;
     }
 
     @Override
-    public void cancellar(String id) {
-        System.out.println("S’anul·la la transacció " + id + " amb el codi " + codiCancelacio);
+    public void cancel(String id) {
+        System.out.println("Transaction " + id + " is being cancelled with the code " + cancelCode);
     }
 }
 
-public class EstrategiaCancelacioNoPermitida implements EstrategiaCancelacio {
+public class DisallowedCancellationStrategy implements CancellationStrategy {
     @Override
-    public void cancellar(String id) {
-        // No fa res, simplement ignora la cancel·lació.
-        System.out.println("Cancel·lació no suportada per aquesta wallet, s’ignora la transacció: " + id);
+    public void cancel(String id) {
+        // Does nothing, simply ignores the cancellation.
+        System.out.println("Cancellation is not supported by this wallet, the transaction is ignored: " + id);
     }
 }
-
 ```
-- **3️⃣ Modificar la classe Wallet per usar l’estratègia de cancel·lació:**
-
+- **3 Modify the Wallet class to use the cancellation strategy:**
 ```java
 public class Wallet {
-    private String nomCripto;
-    private EstrategiaCancelacio estrategiaCancelacio;
+    private String nameCrypto;
+    private CancellationStrategy cancellationStrategy;
 
-    public Wallet(String nomCripto, EstrategiaCancelacio estrategiaCancelacio) {
-        this.nomCripto = nomCripto;
-        this.estrategiaCancelacio = estrategiaCancelacio;
+    public Wallet(String nameCrypto, CancellationStrategy cancellationStrategy) {
+        this.nameCrypto = nameCrypto;
+        this.cancellationStrategy = cancellationStrategy;
     }
 
-    public void enviarDiners(String desti, double quantitat) {
-        System.out.println("S’està enviant diners per la blockchain de " + nomCripto);
+    public void sendMoney(String destination, double amount) {
+        System.out.println("Money is being sent via the blockchain of " + nameCrypto);
     }
 
-    public void cancelarTransaccio(String id) {
-        estrategiaCancelacio.cancellar(id);
+    public void cancelTransaction(String id) {
+        cancellationStrategy.cancel(id);
     }
 }
 ```
-- **4️⃣ Crear les wallets amb l’estratègia adequada:**
-
+- **4 Create wallets with the appropriate strategy:**
 ```java
 public class TezosWallet extends Wallet {
     public TezosWallet() {
-        super("Tezos", new EstrategiaCancelacioPermitida("TEZ_0974_BLCH"));
+        super("Tezos", new AllowedCancellationStrategy("TEZ_0974_BLCH"));
     }
 }
 
 public class EthereumWallet extends Wallet {
     public EthereumWallet() {
-        super("Ethereum", new EstrategiaCancelacioPermitida("ETH_7637_BLCH"));
+        super("Ethereum", new AllowedCancellationStrategy("ETH_7637_BLCH"));
     }
 }
 
 public class MoneroWallet extends Wallet {
     public MoneroWallet() {
-        super("Monero", new EstrategiaCancelacioNoPermitida());
+        super("Monero", new DisallowedCancellationStrategy());
     }
 }
 ```
 
 ---
-
-## 🎯 Objectiu de l’exercici
-
-Trobaràs una classe Java que utilitza **malament l'herència** i, com a conseqüència, **viola el principi de Liskov**.
-
-🔧 El teu repte és:
-
-1. Identificar la jerarquia que **trenca el comportament** esperat.
-2. Refactoritzar el codi per garantir que les **subclasses siguin substituïbles sense trencar** la lògica.
-3. Aplicar **abstraccions i polimorfisme** per fer el codi més flexible i robust.
-
+## Objective of the exercise
+Find a Java class that **misuses inheritance** and, as a consequence, **violates the Liskov Substitution Principle**.
+Your challenge is:
+1. Identify the hierarchy that **breaks the expected behavior**.
+2. Refactor the code to ensure that **subclasses can substitute for their superclasses without breaking** the logic.
+3. Apply **abstraction and polymorphism** to make the code more flexible and robust.
 ---
-
-## 📌 Consells per aplicar LSP
-
-✅ **Assegura’t que totes les subclasses compleixin el contracte de la superclasse.**
-
-✅ **No utilitzis herència només per reutilitzar codi.**
-
-✅ **Considera patrons com Composició`*` sobre Herència quan no hi ha una relació clara de tipus.**
-
-`*`**“Composició”** és un concepte de **POO** que significa construir una classe utilitzant altres objectes (d’altres classes) com a parts internes, en lloc de crear una jerarquia d’herència (subclasses).
-
+## Tips for Applying LSP
+**Ensure that all subclasses comply with the contract of the superclass.**
+**Do not use inheritance only to reuse code.**
+**Consider patterns like Composition* over Inheritance when there is not a clear type relationship.**
+\*“Composition” is a concept of **OOP** that means building a class using other objects (other classes) as internal parts, instead of creating a hierarchy of inheritance (subclasses).
 ---
-
-
-## 💬 Reflexió
-
-Quan apliques correctament **el principi de Liskov**:
-- Evites comportaments inesperats en l’execució.
-- El teu codi és més previsible, segur i reutilitzable.
-- Pots fer servir polimorfisme sense sorpreses.
-
-🔁 **Heretar** comportament vol dir **respectar-lo**, **no trencar-lo**.
-
----
-
-🚀 Endavant! Revisa el codi, identifica l’error i refactoritza la jerarquia perquè compleixi el **LSP**.
-
-❓ **Pot una subclasse ser usada en lloc de la seva superclasse sense problemes?**
- 
-
-
+## Reflection
+When you correctly apply **the Liskov Substitution Principle**:
+- You avoid unexpected behavior in execution.
+- Your code is more predictable, secure, and reusable.
+- You can use polymorphism without surprises.
+  **Inheriting behavior means respecting it, not breaking it.**

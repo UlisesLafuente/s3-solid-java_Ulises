@@ -1,0 +1,2 @@
+# Solucion
+La subclase Ghost rompe el LSP porque el comportamiento de takeDamage impide la substitución de la clase madre por la hija sin que el programa se vea afectado. En vez de arrojar excepción, la subclase Ghost debe implementar un comportamiento consistente con la superclase, de modo que he cambiado el statement de arrojar una excepción por un texto que muestra que el fantasma es inmune a ataques y por tanto no recibe daño.
