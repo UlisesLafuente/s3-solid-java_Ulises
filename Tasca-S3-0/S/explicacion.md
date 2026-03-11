@@ -1,0 +1,3 @@
+# Solución
+La clase User tenía tres responsabilidades. Almacenar los datos del usuario, validar su registro y procesarlo. Para adherirse mejor al principio de responsabilidad única, se ha separado la clase User en dos clases: User y UserRegistrationService. La primera clase sólo almacena los datos del usuario, mientras que la segunda valida registros y los procesa. Esta separación asegura que cada clase tenga un único motivo para ser modificada si fuese necesario.
+Además, se ha limpiado el código con buenas prácticas como convertir los campos de user a Final.
